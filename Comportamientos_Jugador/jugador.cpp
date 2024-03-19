@@ -243,6 +243,82 @@ int ComportamientoJugador::interact(Action accion, int valor) //METODO IRRELEVAN
 
 //IMPLEMENTAR METODOS AUXILIARES
 
+
+
+
+//En el guión se nos indica que todos los mapas comparten las mismas dimensiones de los precipios (externos al mapa central)
+//Aunque dentro del propio mapa habrá más precipios
+void Rellenar_Precipicios_iniciales(vector<vector<unsigned char>>&matriz){
+	
+	for(int i=0; i<matriz.size(); i++){
+		for(int j=0; j<matriz.size(); j++) {
+			if(i==0 || i==1 || i==2 || i==matriz.size() ||i==matriz.size()-1 || i==matriz.size()-2)	//Indicamos las tres primeras filas y las tres ultimas
+			matriz[i][j] = 'P';
+		
+			else if(j==0 || j==1 || j==2 || j==matriz.size() || j==matriz.size()-1 || j==matriz.size()-2) //Indicamos las tres primeras columnas y las tres ultimas
+			matriz[i][j] = 'P';
+		}
+	}
+}
+
+Action movimiento(const vector<unsigned char> & terreno, const Action &accion){
+	Action acc;
+	if(terreno[1] == 'M' and terreno[2] == 'M' and terreno[3] == 'M') { 
+			acc = accion;
+			}
+	return acc;
+}	
+
+
+bool buscar_casilla(const vector<unsigned char> & terreno,char caracter){
+	int encontrado = false;
+
+	for (int i=0; i< 16; ++i){
+		if(terreno[i] == caracter ){ encontrado = true;}
+
+	}
+	return encontrado;
+}
+
+Action Moverse_orientacion(const vector<unsigned char> & terreno,const state &st,char caracter){
+    Action accion;
+
+    // Si el caracter es 'l' y el terreno en la posición 2 es igual a 'l', girar a la izquierda
+    if (caracter == 'l' &&  caracter == 'a' && terreno[2] == caracter) {
+        accion = actTURN_SR;
+    }
+    // Si el caracter no es 'l' y el terreno en la posición 2 es igual al caracter, avanzar
+    else if (caracter != 'l' && caracter != 'a' && terreno[2] == caracter) {
+        accion = actWALK;
+    }
+    else {
+        // Determinar la acción basada en la brújula
+        switch (st.brujula) {
+            case norte:
+                // Girar a la izquierda si el caracter está en la posición 1, girar a la derecha si está en la posición 3, avanzar en otro caso
+                accion = (terreno[1] == caracter) ? actTURN_L : ((terreno[3] == caracter) ? actTURN_SR : actWALK);
+                break;
+            case sur:
+                // Girar a la derecha si el caracter está en la posición 1, girar a la izquierda si está en la posición 3, avanzar en otro caso
+                accion = (terreno[1] == caracter) ? actTURN_SR : ((terreno[3] == caracter) ? actTURN_L : actWALK);
+                break;
+            case este:
+            case oeste:
+            case noreste:
+            case noroeste:
+            case sureste:
+            case suroeste:
+                // Girar a la izquierda si el caracter está en la posición 1, girar a la derecha si está en la posición 3, avanzar en otro caso
+                accion = (terreno[1] == caracter) ? actTURN_L : ((terreno[3] == caracter) ? actTURN_SR : actWALK);
+                break;
+        }
+    }
+
+    return accion;
+}
+
+
+
 void PonerTerrenoEnMatriz(const vector<unsigned char> & terreno, const state &st, vector<vector<unsigned char>>&matriz, int nivel) {
 
 switch(st.brujula){
@@ -399,77 +475,3 @@ switch(st.brujula){
 	break;
 	}
 }
-
-
-//En el guión se nos indica que todos los mapas comparten las mismas dimensiones de los precipios (externos al mapa central)
-//Aunque dentro del propio mapa habrá más precipios
-void Rellenar_Precipicios_iniciales(vector<vector<unsigned char>>&matriz){
-	
-	for(int i=0; i<matriz.size(); i++){
-		for(int j=0; j<matriz.size(); j++) {
-			if(i==0 || i==1 || i==2 || i==matriz.size() ||i==matriz.size()-1 || i==matriz.size()-2)	//Indicamos las tres primeras filas y las tres ultimas
-			matriz[i][j] = 'P';
-		
-			else if(j==0 || j==1 || j==2 || j==matriz.size() || j==matriz.size()-1 || j==matriz.size()-2) //Indicamos las tres primeras columnas y las tres ultimas
-			matriz[i][j] = 'P';
-		}
-	}
-}
-
-Action movimiento(const vector<unsigned char> & terreno, const Action &accion){
-	Action acc;
-	if(terreno[1] == 'M' and terreno[2] == 'M' and terreno[3] == 'M') { 
-			acc = accion;
-			}
-	return acc;
-}	
-
-
-bool buscar_casilla(const vector<unsigned char> & terreno,char caracter){
-	int encontrado = false;
-
-	for (int i=0; i< 16; ++i){
-		if(terreno[i] == caracter ){ encontrado = true;}
-
-	}
-	return encontrado;
-}
-
-Action Moverse_orientacion(const vector<unsigned char> & terreno,const state &st,char caracter){
-    Action accion;
-
-    // Si el caracter es 'l' y el terreno en la posición 2 es igual a 'l', girar a la izquierda
-    if (caracter == 'l' &&  caracter == 'a' && terreno[2] == caracter) {
-        accion = actTURN_SR;
-    }
-    // Si el caracter no es 'l' y el terreno en la posición 2 es igual al caracter, avanzar
-    else if (caracter != 'l' && caracter != 'a' && terreno[2] == caracter) {
-        accion = actWALK;
-    }
-    else {
-        // Determinar la acción basada en la brújula
-        switch (st.brujula) {
-            case norte:
-                // Girar a la izquierda si el caracter está en la posición 1, girar a la derecha si está en la posición 3, avanzar en otro caso
-                accion = (terreno[1] == caracter) ? actTURN_L : ((terreno[3] == caracter) ? actTURN_SR : actWALK);
-                break;
-            case sur:
-                // Girar a la derecha si el caracter está en la posición 1, girar a la izquierda si está en la posición 3, avanzar en otro caso
-                accion = (terreno[1] == caracter) ? actTURN_SR : ((terreno[3] == caracter) ? actTURN_L : actWALK);
-                break;
-            case este:
-            case oeste:
-            case noreste:
-            case noroeste:
-            case sureste:
-            case suroeste:
-                // Girar a la izquierda si el caracter está en la posición 1, girar a la derecha si está en la posición 3, avanzar en otro caso
-                accion = (terreno[1] == caracter) ? actTURN_L : ((terreno[3] == caracter) ? actTURN_SR : actWALK);
-                break;
-        }
-    }
-
-    return accion;
-}
-
-
