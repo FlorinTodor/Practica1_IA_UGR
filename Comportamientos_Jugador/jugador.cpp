@@ -37,8 +37,7 @@ Action Moverse_orientacion(const vector<unsigned char> & sensores,const state &s
 Action ComportamientoJugador::think(Sensores sensores)
 {
 
-	Action accion = actIDLE; //AHora mismo no se mueve porque esto siempre es IDLE
-	//Action auxiliar = actIDLE; //Acción que usaremos para devolver en el caso de encontrar una casilla de poscionamiento
+	Action accion = actIDLE; //AHora mismo no se mueve porque esto siempre es IDLE	
 	int a; //Lo utilizamos para los giros, nos da igual su valor inicial
 		
 	Rellenar_Precipicios_iniciales(mapaResultado); //Rellenamos las casilas de precipios que comparten todos los mapas
@@ -137,7 +136,10 @@ Action ComportamientoJugador::think(Sensores sensores)
 	if(sensores.reset){reseteado= true; bien_situado =false; colision_aldeano=false; zapatillas=false; bikini=false;}
 	if (bien_situado && !reseteado){ //Nos hemos situado en una casilla de posicionamiento
 		if(sensores.nivel  <= 3){//Para niveles 0,1 y 2
-			PonerTerrenoEnMatriz(sensores.terreno,current_state,mapaResultado,sensores.nivel);		
+			PonerTerrenoEnMatriz(sensores.terreno,current_state,mapaResultado,sensores.nivel);
+			sensores.posC = current_state.col;
+			sensores.posF = current_state.fil;
+			sensores.sentido = current_state.brujula;		
 		} 
 		
 	}
@@ -162,6 +164,7 @@ Action ComportamientoJugador::think(Sensores sensores)
 	
 	//Decision nueva accion andando (hay que diferenciar entre andar y correr)
 	if( casilla_desconocida){accion = Moverse_orientacion(sensores.terreno,current_state,'?'); casilla_desconocida= false;}
+
 	if(colision_aldeano){
 		num_giros=0;
 		accion=actTURN_SR; colision_aldeano=false;
@@ -263,7 +266,7 @@ void Rellenar_Precipicios_iniciales(vector<vector<unsigned char>>&matriz){
 
 Action movimiento(const vector<unsigned char> & terreno, const Action &accion){
 	Action acc;
-	if(terreno[1] == 'M' and terreno[2] == 'M' and terreno[3] == 'M') { 
+	if((terreno[1] == 'M' or terreno[1] == 'P') and (terreno[2] == 'M' or terreno[2] == 'P') and (terreno[3] == 'M' or terreno[3] == 'P')){ 
 			acc = accion;
 			}
 	return acc;
@@ -300,7 +303,7 @@ Action Moverse_orientacion(const vector<unsigned char> & terreno,const state &st
                 break;
             case sur:
                 // Girar a la derecha si el caracter está en la posición 1, girar a la izquierda si está en la posición 3, avanzar en otro caso
-                accion = (terreno[1] == caracter) ? actTURN_SR : ((terreno[3] == caracter) ? actTURN_L : actWALK);
+                accion = (terreno[3] == caracter) ? actTURN_SR : ((terreno[1] == caracter) ? actTURN_L : actWALK);
                 break;
             case este:
             case oeste:
