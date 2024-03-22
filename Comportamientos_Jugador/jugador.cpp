@@ -5,30 +5,54 @@ using namespace std;
 //DECLARAR METODOS AUXILIARES
 
 /**
- * @brief Metodo para dibujar los precipios predeterminados en todos los mapas 
+ * @brief Función para rellenar los precipicios predeterminados en todos los mapas.
  *
-*/
-void Rellenar_Precipicios_iniciales(vector<vector<unsigned char>>&matriz);
+ * @param matriz La matriz que representa el mapa.
+ */
+void Rellenar_Precipicios_iniciales(vector<vector<unsigned char>>& matriz);
 
 /**
- * @brief Metodo para dibujar en el MapaResultado
-*/
+ * @brief Función para dibujar el terreno en la matriz de resultado.
+ *
+ * @param terreno El vector que contiene el terreno.
+ * @param st El estado del jugador.
+ * @param matriz La matriz de resultado.
+ * @param nivel El nivel actual.
+ */
 void PonerTerrenoEnMatriz(const vector<unsigned char> & terreno, const state &st, vector<vector<unsigned char>>&matriz,int nivel);
 
 /**
- * @brief Movernos hacía otro lado (accion) en el caso de encontrar un muro
-*/
+ * @brief Función para determinar el movimiento a realizar en caso de encontrar un muro.
+ *
+ * @param terreno El vector que contiene el terreno.
+ * @param accion La acción anterior.
+ * @return La nueva acción a realizar.
+ */
 Action movimiento(const vector<unsigned char> & terreno,const Action &accion);
 
 /**
- * @brief Buscar casilla segun caracter
-*/
+ * @brief Función para buscar una casilla en el terreno según un caracter.
+ *
+ * @param terreno El vector que contiene el terreno.
+ * @param caracter El caracter a buscar.
+ * @return `true` si se encuentra el caracter, `false` en caso contrario.
+ */
 bool buscar_casilla(const vector<unsigned char> & terreno,char caracter);
 
 /**
- * @brief Mover sensores 1,2,3 según orientacion y caracter
-*/
+ * @brief Función para mover los sensores según la orientación y el caracter del terreno.
+ *
+ * @param sensores Los valores de los sensores.
+ * @param st El estado del jugador.
+ * @param caracter El caracter del terreno.
+ * @return La nueva acción a realizar.
+ */
 Action Moverse_orientacion(const vector<unsigned char> & sensores,const state &st,char caracter);
+
+
+bool Son_muros(const vector<unsigned char> & terreno);
+
+bool se_puede_ejecutar(const vector<unsigned char> & terreno, const state &st, const Action &accion);
 
 
 
@@ -133,13 +157,12 @@ Action ComportamientoJugador::think(Sensores sensores)
 
 
 	//Control de Mapa resultado
+	if(sensores.colision){hubo_colision=true;}
 	if(sensores.reset){reseteado= true; bien_situado =false; colision_aldeano=false; zapatillas=false; bikini=false;}
-	if (bien_situado && !reseteado){ //Nos hemos situado en una casilla de posicionamiento
+	
+	if (bien_situado && !reseteado && !hubo_colision){ //Nos hemos situado en una casilla de posicionamiento
 		if(sensores.nivel  <= 3){//Para niveles 0,1 y 2
 			PonerTerrenoEnMatriz(sensores.terreno,current_state,mapaResultado,sensores.nivel);
-			sensores.posC = current_state.col;
-			sensores.posF = current_state.fil;
-			sensores.sentido = current_state.brujula;		
 		} 
 		
 	}
@@ -161,46 +184,50 @@ Action ComportamientoJugador::think(Sensores sensores)
 	recarga_encontrada = buscar_casilla(sensores.terreno,'X');
 	lobo_encontrado = buscar_casilla(sensores.terreno,'l');
 	casilla_desconocida = buscar_casilla(sensores.terreno,'?');
+
+	son_muros= Son_muros(sensores.terreno);
+
+
+
+
+	if (son_muros){ colision_muro=true; accion=actTURN_SR;}
 	
 	//Decision nueva accion andando (hay que diferenciar entre andar y correr)
-	if( casilla_desconocida){accion = Moverse_orientacion(sensores.terreno,current_state,'?'); casilla_desconocida= false;}
+	if( casilla_desconocida && !son_muros){accion = Moverse_orientacion(sensores.terreno,current_state,'?'); casilla_desconocida= false;}
 
-	if(colision_aldeano){
+	if(colision_aldeano && !son_muros){
 		num_giros=0;
 		accion=actTURN_SR; colision_aldeano=false;
 	}
-	else if (sensores.terreno[0] == 'X'){ //Nos situamos en una casilla de recarga
-		if(bateria_baja){
+	else if(sensores.terreno[0]== 'a' && !bikini){accion=actTURN_L;}
+	else if (sensores.terreno[0] == 'X' && bateria_baja){ //Nos situamos en una casilla de recarga
 			if( sensores.nivel == 0 && sensores.bateria >=4500){ bateria_baja=false;accion=actWALK;}
 			if( sensores.nivel == 1 && sensores.bateria >=4800){ bateria_baja=false;accion=actWALK;}
 			if( sensores.nivel == 2 && sensores.bateria >=4900){ bateria_baja=false;accion=actWALK;}
 			if( sensores.nivel == 3 && sensores.bateria >=4500){ bateria_baja=false;accion=actWALK;}
-			
-
-			
-		}
 		if(bateria_baja && sensores.vida >= 1200){
 			accion=actIDLE;
 		}
 		
 	}
-	else if(posicionamiento_encontrado && !bien_situado){
+	else if(posicionamiento_encontrado && !bien_situado && !son_muros){
 		accion = Moverse_orientacion(sensores.terreno,current_state,'G');
 	}
-	else if(lobo_encontrado){
+	else if(lobo_encontrado && !son_muros){
 		accion= Moverse_orientacion(sensores.terreno,current_state,'l');
 	}
-	else if(recarga_encontrada && bateria_baja){
+	else if(recarga_encontrada && bateria_baja && !son_muros){
 		accion = Moverse_orientacion(sensores.terreno,current_state,'X');
+
 	}
-	else if(((bikini == true &&  sensores.terreno[2] == 'A')|| (zapatillas == true &&  sensores.terreno[2] == 'B')) and sensores.agentes[2]== '_' ){
+	else if(((bikini == true &&  sensores.terreno[2] == 'A')|| (zapatillas == true &&  sensores.terreno[2] == 'B')) and (sensores.agentes[2]== '_' && !son_muros)){
 		accion = actWALK;
 	}
-	else if((( sensores.terreno[2] == 'T' && sensores.terreno[6]=='T') || (sensores.terreno[2] == 'S' && sensores.terreno[6]=='S')) and sensores.agentes[2]== '_' && sensores.agentes[6] == '_'){
+	else if((( sensores.terreno[2] == 'T' && sensores.terreno[6]=='T') || (sensores.terreno[2] == 'S' && sensores.terreno[6]=='S')) and (sensores.agentes[2]== '_' && sensores.agentes[6] == '_' && !son_muros)){
 		accion = actRUN;
 	}
 	else if ((sensores.terreno[2]=='T' or sensores.terreno[2]=='S' 
-		or sensores.terreno[2] == 'D' or sensores.terreno[2] == 'K') and sensores.agentes[2]=='_'){
+		or sensores.terreno[2] == 'D' or sensores.terreno[2] == 'K') and sensores.agentes[2]=='_' && !son_muros){
 		accion = actWALK;
 	} 
 	else if (!girar_derecha) {
@@ -221,13 +248,14 @@ Action ComportamientoJugador::think(Sensores sensores)
 		num_giros++;
 	}
 	else num_giros = 0;
-
 	if(num_giros > 7 && sensores.terreno[2]!='M' && sensores.terreno[2]!='P')	accion = actWALK; 
 
 
 
 
 // Para tener en cuenta la acción final
+
+if(accion == actWALK  and( (sensores.terreno[2] == 'P' or  sensores.terreno[2] == 'M' ) or sensores.agentes[2] !='_')){accion=actTURN_SR; hubo_colision = false;}
 last_action = accion;
 
 
@@ -264,6 +292,8 @@ void Rellenar_Precipicios_iniciales(vector<vector<unsigned char>>&matriz){
 	}
 }
 
+
+
 Action movimiento(const vector<unsigned char> & terreno, const Action &accion){
 	Action acc;
 	if((terreno[1] == 'M' or terreno[1] == 'P') and (terreno[2] == 'M' or terreno[2] == 'P') and (terreno[3] == 'M' or terreno[3] == 'P')){ 
@@ -274,17 +304,16 @@ Action movimiento(const vector<unsigned char> & terreno, const Action &accion){
 
 
 bool buscar_casilla(const vector<unsigned char> & terreno,char caracter){
-	int encontrado = false;
 
 	for (int i=0; i< 16; ++i){
-		if(terreno[i] == caracter ){ encontrado = true;}
+		if(terreno[i] == caracter ){ return true;}
 
 	}
-	return encontrado;
+	return false;
 }
 
 Action Moverse_orientacion(const vector<unsigned char> & terreno,const state &st,char caracter){
-    Action accion;
+    Action accion = actIDLE;
 
     // Si el caracter es 'l' y el terreno en la posición 2 es igual a 'l', girar a la izquierda
     if (caracter == 'l' &&  caracter == 'a' && terreno[2] == caracter) {
@@ -299,11 +328,13 @@ Action Moverse_orientacion(const vector<unsigned char> & terreno,const state &st
         switch (st.brujula) {
             case norte:
                 // Girar a la izquierda si el caracter está en la posición 1, girar a la derecha si está en la posición 3, avanzar en otro caso
-                accion = (terreno[1] == caracter) ? actTURN_L : ((terreno[3] == caracter) ? actTURN_SR : actWALK);
+				if (terreno[1] == caracter) { accion = actTURN_L;} else if((terreno[3] == caracter)){  accion = actTURN_SR;} else{ if(!Son_muros(terreno)){  accion = actWALK;}else{  accion = actTURN_SR;}}
+               // accion = (terreno[1] == caracter) ? actTURN_L : ((terreno[3] == caracter) ? actTURN_SR : actWALK);
                 break;
             case sur:
                 // Girar a la derecha si el caracter está en la posición 1, girar a la izquierda si está en la posición 3, avanzar en otro caso
-                accion = (terreno[3] == caracter) ? actTURN_SR : ((terreno[1] == caracter) ? actTURN_L : actWALK);
+				if (terreno[3] == caracter) {  accion =  actTURN_SR;} else if((terreno[1] == caracter)){  accion = actTURN_L;} else{ if(!Son_muros(terreno)){  accion = actWALK;}else{  accion = actTURN_SR;}}
+                //accion = (terreno[3] == caracter) ? actTURN_SR : ((terreno[1] == caracter) ? actTURN_L : actWALK);
                 break;
             case este:
             case oeste:
@@ -312,12 +343,19 @@ Action Moverse_orientacion(const vector<unsigned char> & terreno,const state &st
             case sureste:
             case suroeste:
                 // Girar a la izquierda si el caracter está en la posición 1, girar a la derecha si está en la posición 3, avanzar en otro caso
-                accion = (terreno[1] == caracter) ? actTURN_L : ((terreno[3] == caracter) ? actTURN_SR : actWALK);
+				if (terreno[1] == caracter) {  accion =  actTURN_L;} else if((terreno[3] == caracter)){  accion = actTURN_SR;} else{ if(!Son_muros(terreno)){  accion = actWALK;}else{ accion = actTURN_SR;}}
+                //accion = (terreno[1] == caracter) ? actTURN_L : ((terreno[3] == caracter) ? actTURN_SR : actWALK);
                 break;
         }
     }
 
     return accion;
+}
+
+bool Son_muros(const vector<unsigned char> & terreno){
+	bool variable = false;
+	if ((terreno[1] == 'M' and terreno[2]== 'M') or (terreno[1] == 'M' and terreno[2] == 'M' and terreno[3]== 'M') or (terreno[2] == 'M' and terreno[3]== 'M') or ( terreno[1] == 'M' and terreno[3]== 'M')) { variable = true;}
+	return variable;
 }
 
 

@@ -3,6 +3,7 @@
 
 #include "comportamientos/comportamiento.hpp"
 #include <iostream>
+#include <queue>
 using namespace std;
 
 struct state{
@@ -36,7 +37,14 @@ class ComportamientoJugador : public Comportamiento{
       colision_lobo = false;
       colision_aldeano = false;
       casilla_desconocida = false;
-    
+      colision_muro=false;
+      son_muros = true;
+      entra_en_bucle=false;
+      iteracciones= 0;
+      iteracciones_aux =0;
+      queue<Action> cola_normal;
+	    queue<Action> cola_auxiliar;
+      hubo_colision=false;
       
     }
 
@@ -65,6 +73,17 @@ class ComportamientoJugador : public Comportamiento{
   bool colision_lobo;
   bool colision_aldeano;
   bool casilla_desconocida;
+  bool colision_muro;
+  bool son_muros;
+
+
+ bool entra_en_bucle;
+ 	queue<Action> cola_normal;
+	queue<Action> cola_auxiliar;
+	int iteracciones;
+  int iteracciones_aux;
+
+  bool hubo_colision;
 
 };
 
