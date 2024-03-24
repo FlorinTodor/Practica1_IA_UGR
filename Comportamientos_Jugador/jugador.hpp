@@ -3,7 +3,7 @@
 
 #include "comportamientos/comportamiento.hpp"
 #include <iostream>
-#include <queue>
+
 using namespace std;
 
 struct state{
@@ -39,12 +39,10 @@ class ComportamientoJugador : public Comportamiento{
       casilla_desconocida = false;
       colision_muro=false;
       son_muros = true;
-      entra_en_bucle=false;
-      iteracciones= 0;
-      iteracciones_aux =0;
-      queue<Action> cola_normal;
-	    queue<Action> cola_auxiliar;
       hubo_colision=false;
+
+      contador_muros=0;
+      girar_izquierda=false; //Para utilizarlo para girar otra vez
       
     }
 
@@ -61,6 +59,7 @@ class ComportamientoJugador : public Comportamiento{
   state current_state; //estado actual
   Action last_action; //Ultima acción realizada
   bool girar_derecha;
+  bool girar_izquierda;
   bool bien_situado;
   bool zapatillas;
   bool bikini;
@@ -77,13 +76,9 @@ class ComportamientoJugador : public Comportamiento{
   bool son_muros;
 
 
- bool entra_en_bucle;
- 	queue<Action> cola_normal;
-	queue<Action> cola_auxiliar;
-	int iteracciones;
-  int iteracciones_aux;
-
   bool hubo_colision;
+
+  int contador_muros;
 
 };
 

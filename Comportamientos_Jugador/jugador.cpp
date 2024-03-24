@@ -157,7 +157,7 @@ Action ComportamientoJugador::think(Sensores sensores)
 
 
 	//Control de Mapa resultado
-	if(sensores.colision){hubo_colision=true;}
+	if(sensores.colision && sensores.terreno[2== 'M']){hubo_colision=true;}
 	if(sensores.reset){reseteado= true; bien_situado =false; colision_aldeano=false; zapatillas=false; bikini=false;}
 	
 	if (bien_situado && !reseteado && !hubo_colision){ //Nos hemos situado en una casilla de posicionamiento
@@ -187,7 +187,7 @@ Action ComportamientoJugador::think(Sensores sensores)
 
 	son_muros= Son_muros(sensores.terreno);
 
-
+	
 
 
 	if (son_muros){ colision_muro=true; accion=actTURN_SR;}
@@ -199,7 +199,8 @@ Action ComportamientoJugador::think(Sensores sensores)
 		num_giros=0;
 		accion=actTURN_SR; colision_aldeano=false;
 	}
-	else if(sensores.terreno[0]== 'a' && !bikini){accion=actTURN_L;}
+	//else if((sensores.posF==3 and sensores.posC == 3) or (sensores.posF==3 and sensores.posC == mapaResultado.size()-3) or (sensores.posF== mapaResultado.size()-3 and sensores.posC == 3) or (sensores.posF == mapaResultado.size()-3 and sensores.posC==mapaResultado.size()-3))	accion = actTURN_SR; 
+	else if((sensores.terreno[0]== 'a' && !bikini) or sensores.terreno[0]== 'b' && !zapatillas){accion=actTURN_L;}
 	else if (sensores.terreno[0] == 'X' && bateria_baja){ //Nos situamos en una casilla de recarga
 			if( sensores.nivel == 0 && sensores.bateria >=4500){ bateria_baja=false;accion=actWALK;}
 			if( sensores.nivel == 1 && sensores.bateria >=4800){ bateria_baja=false;accion=actWALK;}
@@ -223,7 +224,7 @@ Action ComportamientoJugador::think(Sensores sensores)
 	else if(((bikini == true &&  sensores.terreno[2] == 'A')|| (zapatillas == true &&  sensores.terreno[2] == 'B')) and (sensores.agentes[2]== '_' && !son_muros)){
 		accion = actWALK;
 	}
-	else if((( sensores.terreno[2] == 'T' && sensores.terreno[6]=='T') || (sensores.terreno[2] == 'S' && sensores.terreno[6]=='S')) and (sensores.agentes[2]== '_' && sensores.agentes[6] == '_' && !son_muros)){
+	else if((( sensores.terreno[2] == 'T' && sensores.terreno[6]=='T') || (sensores.terreno[2] == 'S' && sensores.terreno[6]=='S')) and (sensores.agentes[2]== '_' && sensores.agentes[6] == '_' && !son_muros) and (!hubo_colision)){
 		accion = actRUN;
 	}
 	else if ((sensores.terreno[2]=='T' or sensores.terreno[2]=='S' 
@@ -248,17 +249,16 @@ Action ComportamientoJugador::think(Sensores sensores)
 		num_giros++;
 	}
 	else num_giros = 0;
-	if(num_giros > 7 && sensores.terreno[2]!='M' && sensores.terreno[2]!='P')	accion = actWALK; 
+	if(num_giros > 7 && (sensores.terreno[2]!='M' && sensores.terreno[2]!='P') or sensores.agentes[2] !='_')	accion = actWALK; 
 
 
-
+	
 
 // Para tener en cuenta la acción final
 
 if(accion == actWALK  and( (sensores.terreno[2] == 'P' or  sensores.terreno[2] == 'M' ) or sensores.agentes[2] !='_')){accion=actTURN_SR; hubo_colision = false;}
+
 last_action = accion;
-
-
 return accion;
 
 
