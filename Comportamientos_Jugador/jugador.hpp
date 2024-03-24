@@ -3,7 +3,6 @@
 
 #include "comportamientos/comportamiento.hpp"
 #include <iostream>
-
 using namespace std;
 
 struct state{

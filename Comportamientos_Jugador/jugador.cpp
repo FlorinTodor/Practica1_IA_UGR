@@ -52,19 +52,17 @@ Action Moverse_orientacion(const vector<unsigned char> & sensores,const state &s
 
 bool Son_muros(const vector<unsigned char> & terreno);
 
-bool se_puede_ejecutar(const vector<unsigned char> & terreno, const state &st, const Action &accion);
-
-
 
 
 
 Action ComportamientoJugador::think(Sensores sensores)
 {
 
-	Action accion = actIDLE; //AHora mismo no se mueve porque esto siempre es IDLE	
+	Action accion = actIDLE;
 	int a; //Lo utilizamos para los giros, nos da igual su valor inicial
 		
-	Rellenar_Precipicios_iniciales(mapaResultado); //Rellenamos las casilas de precipios que comparten todos los mapas
+	//Rellenamos las casilas de precipios que comparten todos los mapas
+	Rellenar_Precipicios_iniciales(mapaResultado); 
 	
 	// Mostrar el valor de los sensores
 	cout << "Posicion: fila " << sensores.posF << " columna " << sensores.posC;
@@ -92,7 +90,6 @@ Action ComportamientoJugador::think(Sensores sensores)
 	cout << "  Vida: " << sensores.vida << endl<< endl;
 
 	//Actualizar el mundo con la última accion
-	//hacer otro case para correr
 	
 	switch (last_action){
 		case actWALK:
@@ -144,7 +141,7 @@ Action ComportamientoJugador::think(Sensores sensores)
 	
 
 
-	//Definir las reglas
+	/*                   REGLAS                                   */
 
 	//Control de posicionamiento
 	if (sensores.terreno[0]=='G' and !bien_situado){
@@ -157,69 +154,82 @@ Action ComportamientoJugador::think(Sensores sensores)
 
 
 	//Control de Mapa resultado
-	if(sensores.colision && sensores.terreno[2== 'M']){hubo_colision=true;}
-	if(sensores.reset){reseteado= true; bien_situado =false; colision_aldeano=false; zapatillas=false; bikini=false;}
+
+	//Detectamos colisión de muros
+	if(sensores.colision && sensores.terreno[2]== 'M'){hubo_colision=true;}	
+
+
+	//En el caso de que hubiera un reseteo se pierde todo
+	if(sensores.reset){
+	reseteado= true; bien_situado =false; colision_aldeano=false; zapatillas=false; bikini=false; hubo_colision=false; 
+	girar_derecha=false; contador_muros=0; posicionamiento_encontrado=false; recarga_encontrada=false; num_giros=0;
+	bateria_baja=false; colision_lobo=false; casilla_desconocida=false; colision_muro=false; son_muros=false;}
+
+
 	
-	if (bien_situado && !reseteado && !hubo_colision){ //Nos hemos situado en una casilla de posicionamiento
-		if(sensores.nivel  <= 3){//Para niveles 0,1 y 2
-			PonerTerrenoEnMatriz(sensores.terreno,current_state,mapaResultado,sensores.nivel);
-		} 
-		
-	}
+	
+	/* SOLAMENTE PINTAMOS EN EL MAPARESULTADO SI ESTAMOS BIEN SITUADOS, NO HUBO COLISION CON MUROS(para evitar los errores de core por colision) Y NO HUBO RESETEO 
+	*/
+	if (bien_situado && !reseteado && !hubo_colision){ 	PonerTerrenoEnMatriz(sensores.terreno,current_state,mapaResultado,sensores.nivel);}
+	
+
+
 	
 
 	//Control de variables globales
 	if (sensores.terreno[0] == 'D') {zapatillas=true;}
 	if (sensores.terreno[0] == 'K') {bikini=true;}
+
+
 	//Control de bateria
 	if(sensores.nivel == 0 && sensores.bateria <= 4200){bateria_baja = true;}
 	if(sensores.nivel == 1 && sensores.bateria <= 4600){bateria_baja = true;}
 	if(sensores.nivel == 2 && sensores.bateria <= 4600){bateria_baja = true;}
 	if(sensores.nivel == 3 && sensores.bateria <= 5000){bateria_baja = true;}
+
+
 	//Control de colisión con aldeanos
 	if((sensores.agentes[2] == 'a' or sensores.agentes[6] == 'a') && !colision_aldeano){colision_aldeano=true;}
 	
-	//Controles de casillas
+	//Controles de casillas, buscar en los 15 sensores de terreno
 	posicionamiento_encontrado =  buscar_casilla(sensores.terreno,'G');
 	recarga_encontrada = buscar_casilla(sensores.terreno,'X');
 	lobo_encontrado = buscar_casilla(sensores.terreno,'l');
 	casilla_desconocida = buscar_casilla(sensores.terreno,'?');
-
+	
+	//Detección de muros
 	son_muros= Son_muros(sensores.terreno);
 
 	
 
-
+	//Determinar si en los tres sensores hay 2 o 3 muros
 	if (son_muros){ colision_muro=true; accion=actTURN_SR;}
 	
-	//Decision nueva accion andando (hay que diferenciar entre andar y correr)
 	if( casilla_desconocida && !son_muros){accion = Moverse_orientacion(sensores.terreno,current_state,'?'); casilla_desconocida= false;}
 
 	if(colision_aldeano && !son_muros){
 		num_giros=0;
 		accion=actTURN_SR; colision_aldeano=false;
 	}
-	//else if((sensores.posF==3 and sensores.posC == 3) or (sensores.posF==3 and sensores.posC == mapaResultado.size()-3) or (sensores.posF== mapaResultado.size()-3 and sensores.posC == 3) or (sensores.posF == mapaResultado.size()-3 and sensores.posC==mapaResultado.size()-3))	accion = actTURN_SR; 
-	else if((sensores.terreno[0]== 'a' && !bikini) or sensores.terreno[0]== 'b' && !zapatillas){accion=actTURN_L;}
-	else if (sensores.terreno[0] == 'X' && bateria_baja){ //Nos situamos en una casilla de recarga
+	else if (sensores.terreno[0] == 'X' && bateria_baja){ //Nos situamos en una casilla de recarga y tenemos bateria baja
 			if( sensores.nivel == 0 && sensores.bateria >=4500){ bateria_baja=false;accion=actWALK;}
 			if( sensores.nivel == 1 && sensores.bateria >=4800){ bateria_baja=false;accion=actWALK;}
 			if( sensores.nivel == 2 && sensores.bateria >=4900){ bateria_baja=false;accion=actWALK;}
 			if( sensores.nivel == 3 && sensores.bateria >=4500){ bateria_baja=false;accion=actWALK;}
-		if(bateria_baja && sensores.vida >= 1200){
+		if(bateria_baja && sensores.vida >= 1200){ //No nos movemos hasta que se considere bastante bateria para seguir
 			accion=actIDLE;
 		}
 		
 	}
-	else if(posicionamiento_encontrado && !bien_situado && !son_muros){
+	else if(posicionamiento_encontrado && !bien_situado && !son_muros){ //Solo nos movemos hacia una casilla de posicionamiento si no estamos bien situados y no hay muros
 		accion = Moverse_orientacion(sensores.terreno,current_state,'G');
-	}
-	else if(lobo_encontrado && !son_muros){
-		accion= Moverse_orientacion(sensores.terreno,current_state,'l');
 	}
 	else if(recarga_encontrada && bateria_baja && !son_muros){
 		accion = Moverse_orientacion(sensores.terreno,current_state,'X');
 
+	}
+	else if(lobo_encontrado && !son_muros){
+		accion= Moverse_orientacion(sensores.terreno,current_state,'l');
 	}
 	else if(((bikini == true &&  sensores.terreno[2] == 'A')|| (zapatillas == true &&  sensores.terreno[2] == 'B')) and (sensores.agentes[2]== '_' && !son_muros)){
 		accion = actWALK;
@@ -231,6 +241,7 @@ Action ComportamientoJugador::think(Sensores sensores)
 		or sensores.terreno[2] == 'D' or sensores.terreno[2] == 'K') and sensores.agentes[2]=='_' && !son_muros){
 		accion = actWALK;
 	} 
+	else if()
 	else if (!girar_derecha) {
 		accion = actTURN_L;
 		girar_derecha = (rand() % 2 == 0);
@@ -249,13 +260,15 @@ Action ComportamientoJugador::think(Sensores sensores)
 		num_giros++;
 	}
 	else num_giros = 0;
+
+
 	if(num_giros > 7 && (sensores.terreno[2]!='M' && sensores.terreno[2]!='P') or sensores.agentes[2] !='_')	accion = actWALK; 
 
 
 	
 
-// Para tener en cuenta la acción final
 
+//Para evitar colisciones con muros o precipicios cambiamos la accion
 if(accion == actWALK  and( (sensores.terreno[2] == 'P' or  sensores.terreno[2] == 'M' ) or sensores.agentes[2] !='_')){accion=actTURN_SR; hubo_colision = false;}
 
 last_action = accion;
@@ -316,7 +329,7 @@ Action Moverse_orientacion(const vector<unsigned char> & terreno,const state &st
     Action accion = actIDLE;
 
     // Si el caracter es 'l' y el terreno en la posición 2 es igual a 'l', girar a la izquierda
-    if (caracter == 'l' &&  caracter == 'a' && terreno[2] == caracter) {
+    if ((caracter == 'l' or  caracter == 'a') && terreno[2] == caracter) {
         accion = actTURN_SR;
     }
     // Si el caracter no es 'l' y el terreno en la posición 2 es igual al caracter, avanzar
