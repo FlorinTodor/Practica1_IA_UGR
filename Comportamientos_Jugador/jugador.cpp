@@ -241,13 +241,12 @@ Action ComportamientoJugador::think(Sensores sensores)
 		or sensores.terreno[2] == 'D' or sensores.terreno[2] == 'K') and sensores.agentes[2]=='_' && !son_muros){
 		accion = actWALK;
 	} 
-	else if()
 	else if (!girar_derecha) {
-		accion = actTURN_L;
+		accion = actTURN_SR;
 		girar_derecha = (rand() % 2 == 0);
 	}
 	else {
-		accion = actTURN_SR;
+		accion = actTURN_L;
 		girar_derecha = (rand() % 2 == 0);
 	}
 
