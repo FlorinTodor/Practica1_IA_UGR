@@ -221,15 +221,15 @@ Action ComportamientoJugador::think(Sensores sensores)
 		}
 		
 	}
+	else if(lobo_encontrado && !son_muros){
+		accion=Moverse_orientacion(sensores.terreno,current_state,'l');
+	}
 	else if(posicionamiento_encontrado && !bien_situado && !son_muros){ //Solo nos movemos hacia una casilla de posicionamiento si no estamos bien situados y no hay muros
 		accion = Moverse_orientacion(sensores.terreno,current_state,'G');
 	}
 	else if(recarga_encontrada && bateria_baja && !son_muros){
 		accion = Moverse_orientacion(sensores.terreno,current_state,'X');
 
-	}
-	else if(lobo_encontrado && !son_muros){
-		accion= Moverse_orientacion(sensores.terreno,current_state,'l');
 	}
 	else if(((bikini == true &&  sensores.terreno[2] == 'A')|| (zapatillas == true &&  sensores.terreno[2] == 'B')) and (sensores.agentes[2]== '_' && !son_muros)){
 		accion = actWALK;
@@ -242,11 +242,11 @@ Action ComportamientoJugador::think(Sensores sensores)
 		accion = actWALK;
 	} 
 	else if (!girar_derecha) {
-		accion = actTURN_SR;
+		accion = actTURN_L;
 		girar_derecha = (rand() % 2 == 0);
 	}
 	else {
-		accion = actTURN_L;
+		accion = actTURN_SR;
 		girar_derecha = (rand() % 2 == 0);
 	}
 
@@ -336,29 +336,55 @@ Action Moverse_orientacion(const vector<unsigned char> & terreno,const state &st
         accion = actWALK;
     }
     else {
+		if(caracter != 'l' && caracter != 'a'){
         // Determinar la acción basada en la brújula
-        switch (st.brujula) {
-            case norte:
-                // Girar a la izquierda si el caracter está en la posición 1, girar a la derecha si está en la posición 3, avanzar en otro caso
-				if (terreno[1] == caracter) { accion = actTURN_L;} else if((terreno[3] == caracter)){  accion = actTURN_SR;} else{ if(!Son_muros(terreno)){  accion = actWALK;}else{  accion = actTURN_SR;}}
-               // accion = (terreno[1] == caracter) ? actTURN_L : ((terreno[3] == caracter) ? actTURN_SR : actWALK);
-                break;
-            case sur:
-                // Girar a la derecha si el caracter está en la posición 1, girar a la izquierda si está en la posición 3, avanzar en otro caso
-				if (terreno[3] == caracter) {  accion =  actTURN_SR;} else if((terreno[1] == caracter)){  accion = actTURN_L;} else{ if(!Son_muros(terreno)){  accion = actWALK;}else{  accion = actTURN_SR;}}
-                //accion = (terreno[3] == caracter) ? actTURN_SR : ((terreno[1] == caracter) ? actTURN_L : actWALK);
-                break;
-            case este:
-            case oeste:
-            case noreste:
-            case noroeste:
-            case sureste:
-            case suroeste:
-                // Girar a la izquierda si el caracter está en la posición 1, girar a la derecha si está en la posición 3, avanzar en otro caso
-				if (terreno[1] == caracter) {  accion =  actTURN_L;} else if((terreno[3] == caracter)){  accion = actTURN_SR;} else{ if(!Son_muros(terreno)){  accion = actWALK;}else{ accion = actTURN_SR;}}
-                //accion = (terreno[1] == caracter) ? actTURN_L : ((terreno[3] == caracter) ? actTURN_SR : actWALK);
-                break;
-        }
+			switch (st.brujula) {
+				case norte:
+					// Girar a la izquierda si el caracter está en la posición 1, girar a la derecha si está en la posición 3, avanzar en otro caso
+					if (terreno[1] == caracter) { accion = actTURN_L;} else if((terreno[3] == caracter)){  accion = actTURN_SR;} else{ if(!Son_muros(terreno)){  accion = actWALK;}else{  accion = actTURN_SR;}}
+				// accion = (terreno[1] == caracter) ? actTURN_L : ((terreno[3] == caracter) ? actTURN_SR : actWALK);
+					break;
+				case sur:
+					// Girar a la derecha si el caracter está en la posición 1, girar a la izquierda si está en la posición 3, avanzar en otro caso
+					if (terreno[3] == caracter) {  accion =  actTURN_SR;} else if((terreno[1] == caracter)){  accion = actTURN_L;} else{ if(!Son_muros(terreno)){  accion = actWALK;}else{  accion = actTURN_SR;}}
+					//accion = (terreno[3] == caracter) ? actTURN_SR : ((terreno[1] == caracter) ? actTURN_L : actWALK);
+					break;
+				case este:
+				case oeste:
+				case noreste:
+				case noroeste:
+				case sureste:
+				case suroeste:
+					// Girar a la izquierda si el caracter está en la posición 1, girar a la derecha si está en la posición 3, avanzar en otro caso
+					if (terreno[1] == caracter) {  accion =  actTURN_L;} else if((terreno[3] == caracter)){  accion = actTURN_SR;} else{ if(!Son_muros(terreno)){  accion = actWALK;}else{ accion = actTURN_SR;}}
+					//accion = (terreno[1] == caracter) ? actTURN_L : ((terreno[3] == caracter) ? actTURN_SR : actWALK);
+					break;
+			}
+		}
+		else{
+			switch (st.brujula) {
+				case norte:
+					// Girar a la izquierda si el caracter está en la posición 1, girar a la derecha si está en la posición 3, avanzar en otro caso
+					if (terreno[1] == caracter) { accion = actTURN_SR;} else if((terreno[3] == caracter)){  accion = actTURN_L;} else{ if(!Son_muros(terreno)){  accion = actWALK;}else{  accion = actTURN_SR;}}
+				// accion = (terreno[1] == caracter) ? actTURN_L : ((terreno[3] == caracter) ? actTURN_SR : actWALK);
+					break;
+				case sur:
+					// Girar a la derecha si el caracter está en la posición 1, girar a la izquierda si está en la posición 3, avanzar en otro caso
+					if (terreno[3] == caracter) {  accion =  actTURN_L;} else if((terreno[1] == caracter)){  accion = actTURN_SR;} else{ if(!Son_muros(terreno)){  accion = actWALK;}else{  accion = actTURN_SR;}}
+					//accion = (terreno[3] == caracter) ? actTURN_SR : ((terreno[1] == caracter) ? actTURN_L : actWALK);
+					break;
+				case este:
+				case oeste:
+				case noreste:
+				case noroeste:
+				case sureste:
+				case suroeste:
+					// Girar a la izquierda si el caracter está en la posición 1, girar a la derecha si está en la posición 3, avanzar en otro caso
+					if (terreno[1] == caracter) {  accion =  actTURN_SR;} else if((terreno[3] == caracter)){  accion = actTURN_L;} else{ if(!Son_muros(terreno)){  accion = actWALK;}else{ accion = actTURN_SR;}}
+					//accion = (terreno[1] == caracter) ? actTURN_L : ((terreno[3] == caracter) ? actTURN_SR : actWALK);
+					break;
+			}
+		}
     }
 
     return accion;
