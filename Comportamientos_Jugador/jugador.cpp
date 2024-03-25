@@ -162,7 +162,7 @@ Action ComportamientoJugador::think(Sensores sensores)
 	//En el caso de que hubiera un reseteo se pierde todo
 	if(sensores.reset){
 	reseteado= true; bien_situado =false; colision_aldeano=false; zapatillas=false; bikini=false; hubo_colision=false; 
-	girar_derecha=false; contador_muros=0; posicionamiento_encontrado=false; recarga_encontrada=false; num_giros=0;
+	girar_derecha=false; posicionamiento_encontrado=false; recarga_encontrada=false; num_giros=0;
 	bateria_baja=false; colision_lobo=false; casilla_desconocida=false; colision_muro=false; son_muros=false;}
 
 
@@ -195,8 +195,6 @@ Action ComportamientoJugador::think(Sensores sensores)
 	posicionamiento_encontrado =  buscar_casilla(sensores.terreno,'G');
 	recarga_encontrada = buscar_casilla(sensores.terreno,'X');
 	casilla_desconocida = buscar_casilla(sensores.terreno,'?');
-	suelo_pedregoso= buscar_casilla(sensores.terreno,'S');
-	suelo_arenoso = buscar_casilla(sensores.terreno,'T');
 	
 	//Detección de muros
 	son_muros= Son_muros(sensores.terreno);
