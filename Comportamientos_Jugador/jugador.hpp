@@ -42,6 +42,9 @@ class ComportamientoJugador : public Comportamiento{
 
       contador_muros=0;
       girar_izquierda=false; //Para utilizarlo para girar otra vez
+
+      suelo_arenoso=false;
+      suelo_pedregoso=false;
       
     }
 
@@ -78,6 +81,8 @@ class ComportamientoJugador : public Comportamiento{
   bool hubo_colision;
 
   int contador_muros;
+  bool suelo_pedregoso;
+  bool suelo_arenoso;
 
 };
 
