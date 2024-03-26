@@ -54,6 +54,10 @@ bool Son_muros(const vector<unsigned char> & terreno);
 
 
 
+Action EntrarMuro(Sensores sensores, const state &current_state);
+
+bool HayMuroDelante(const vector <unsigned char> &terreno);
+bool VeoPuertaMuro(const vector <unsigned char> &terreno,const state &current_state);
 
 Action ComportamientoJugador::think(Sensores sensores)
 {
@@ -122,13 +126,13 @@ Action ComportamientoJugador::think(Sensores sensores)
 				a = current_state.brujula;
 				a = (a+1) %8;
 				current_state.brujula = (Orientacion)a;
-				sensores.sentido = current_state.brujula;
+				
 			break;
 		case actTURN_L: //Giro izquiera --> actTurn_L  -> nueva =(antigua+6)%8
 				a = current_state.brujula;
 				a = (a+6) % 8; // +6 porque es giro de 90 grados para evitar negativos
 				current_state.brujula = (Orientacion)a;
-				sensores.sentido = current_state.brujula;
+				
 			break;
 
 		break;
@@ -156,13 +160,14 @@ Action ComportamientoJugador::think(Sensores sensores)
 	//Control de Mapa resultado
 
 	//Detectamos colisión de muros
-	if(sensores.colision && sensores.terreno[2]== 'M'){hubo_colision=true;}	
+	if(sensores.colision && sensores.terreno[2]== 'M'){hubo_colision=true;}
+
 
 
 	//En el caso de que hubiera un reseteo se pierde todo
 	if(sensores.reset){
 	reseteado= true; bien_situado =false; colision_aldeano=false; zapatillas=false; bikini=false; hubo_colision=false; 
-	girar_derecha=false; posicionamiento_encontrado=false; recarga_encontrada=false; num_giros=0;
+	girar_derecha=false; contador_muros=0; posicionamiento_encontrado=false; recarga_encontrada=false; num_giros=0;
 	bateria_baja=false; colision_lobo=false; casilla_desconocida=false; colision_muro=false; son_muros=false;}
 
 
@@ -236,6 +241,9 @@ Action ComportamientoJugador::think(Sensores sensores)
 	else if ((sensores.terreno[2]=='T' or sensores.terreno[2]=='S' 
 		or sensores.terreno[2] == 'D' or sensores.terreno[2] == 'K') and sensores.agentes[2]=='_' && !son_muros){
 		accion = actWALK;
+	} 
+	else if(VeoPuertaMuro(sensores.terreno,current_state)==true and !HayMuroDelante(sensores.terreno)){
+		accion = EntrarMuro(sensores,current_state);
 	}
 	else if (!girar_derecha) {
 		accion = actTURN_L;
@@ -281,10 +289,234 @@ int ComportamientoJugador::interact(Action accion, int valor) //METODO IRRELEVAN
 
 
 //IMPLEMENTAR METODOS AUXILIARES
+bool HayMuroDelante(const vector <unsigned char> &terreno){
+	bool hay=false;
+	if(terreno[2]=='M')
+		hay=true;
+	return hay;
+}
 
 
+bool VeoPuertaMuro(const vector <unsigned char> &terreno,const state &current_state){
+	
+	//MURO SITUADO DELANTE
+	if(current_state.brujula==norte or current_state.brujula==sur
+	or current_state.brujula==este or current_state.brujula==oeste){
+		if(terreno[1]!='M'){
+			if(terreno[2] == 'M')
+				if(terreno[3]=='M')
+						return true;
+		}
+		if(terreno[2]!='M' ){
+			if(terreno[1] == 'M')
+				if(terreno[3]=='M')
+						return true;
+		}
+		if(terreno[3]!='M' ){
+			if(terreno[2] == 'M')
+				if(terreno[1]=='M')
+						return true;
+		}	
+		
+		if(terreno[4]!='M' ){
+			if(terreno[5] == 'M')
+				if(terreno[6]=='M')
+						return true;
+		}
 
+		if(terreno[5]!='M' ){
+			if(terreno[4] == 'M')
+				if(terreno[6]=='M')
+						return true;
+		}
 
+		if(terreno[6]!='M' ){
+			if(terreno[5] == 'M')
+				if(terreno[7]=='M')
+						return true;
+		}
+
+		if(terreno[7]!='M' ){
+			if(terreno[6] == 'M')
+				if(terreno[8]=='M')
+						return true;
+		}
+	
+		if(terreno[8]!='M' ){
+			if(terreno[6] == 'M')
+				if(terreno[7]=='M')
+						return true;
+		}
+
+		if(terreno[10]!='M' ){
+			if(terreno[11] == 'M')
+				if(terreno[9]=='M')
+						return true;
+		}
+
+		if(terreno[11]!='M' ){
+			if(terreno[10] == 'M')
+				if(terreno[12]=='M')
+						return true;
+		}
+
+		if(terreno[12]!='M' ){
+			if(terreno[11] == 'M')
+				if(terreno[13]=='M')
+						return true;
+		}
+		
+		if(terreno[13]!='M' ){
+			if(terreno[12] == 'M')
+				if(terreno[14]=='M')
+						return true;
+		}
+
+		if(terreno[14]!='M' ){
+			if(terreno[13] == 'M')
+				if(terreno[15]=='M')
+						return true;
+		}
+
+		// MURO SITUADO AL LADO
+
+		if(terreno[1]!='M'){
+			if(terreno[5] == 'M')
+				if(terreno[11]=='M')
+						return true;
+		}
+
+		if(terreno[3]!='M' ){
+			if(terreno[7] == 'M')
+				if(terreno[13]=='M')
+						return true;
+		}
+
+		if(terreno[5]!='M'){
+			if(terreno[1] == 'M')
+				if(terreno[11]=='M')
+						return true;
+		}
+
+		if(terreno[7]!='M'){
+			if(terreno[3] == 'M')
+				if(terreno[13]=='M')
+						return true;
+		}
+	}
+
+	return false;
+}
+
+Action EntrarMuro(Sensores sensores,const state &current_state){
+	Action accion = actIDLE;
+
+	if(current_state.brujula==norte or current_state.brujula==sur
+	or current_state.brujula==este or current_state.brujula==oeste){
+		// MURO SITUADO DELANTE
+		if(sensores.terreno[1]!='M' ){
+			if(sensores.terreno[2] == 'M')
+				if(sensores.terreno[3]=='M')
+						accion = actTURN_SR;
+		}
+		if(sensores.terreno[2]!='M' ){
+			if(sensores.terreno[1] == 'M')
+				if(sensores.terreno[3]=='M')
+						accion = actWALK;
+		}
+		if(sensores.terreno[3]!='M' ){
+			if(sensores.terreno[2] == 'M')
+				if(sensores.terreno[1]=='M')
+						accion = actTURN_SR;
+		}
+
+		if(sensores.terreno[4]!='M' ){
+			if(sensores.terreno[5] == 'M')
+				if(sensores.terreno[6]=='M')
+						accion = actTURN_SR;
+		}
+
+		if(sensores.terreno[5]!='M' ){
+			if(sensores.terreno[4] == 'M')
+				if(sensores.terreno[6]=='M')
+						accion = actWALK;
+		}
+
+		if(sensores.terreno[6]!='M' ){
+			if(sensores.terreno[5] == 'M')
+				if(sensores.terreno[7]=='M')
+						accion = actWALK;
+		}
+
+		if(sensores.terreno[7]!='M' ){
+			if(sensores.terreno[6] == 'M')
+				if(sensores.terreno[8]=='M')
+						accion = actWALK;
+		}
+		
+		if(sensores.terreno[8]!='M' ){
+			if(sensores.terreno[6] == 'M')
+				if(sensores.terreno[7]=='M')
+						accion = actTURN_SR;
+		}
+
+		if(sensores.terreno[10]!='M' ){
+			if(sensores.terreno[9] == 'M')
+				if(sensores.terreno[11]=='M')
+						accion = actWALK;
+		}
+
+		if(sensores.terreno[11]!='M' ){
+			if(sensores.terreno[10] == 'M')
+				if(sensores.terreno[12]=='M')
+						accion = actWALK;
+		}
+
+		if(sensores.terreno[12]!='M' ){
+			if(sensores.terreno[11] == 'M')
+				if(sensores.terreno[13]=='M')
+						accion = actWALK;
+		}
+
+		if(sensores.terreno[13]!='M' ){
+			if(sensores.terreno[12] == 'M')
+				if(sensores.terreno[14]=='M')
+						accion = actWALK;
+		}
+
+		if(sensores.terreno[14]!='M' ){
+			if(sensores.terreno[13] == 'M')
+				if(sensores.terreno[15]=='M')
+						accion = actWALK;
+
+		// MURO SITUADO AL LADO
+
+		if(sensores.terreno[1]!='M'){
+			if(sensores.terreno[5] == 'M')
+				if(sensores.terreno[11]=='M')
+						accion = actTURN_SR;
+		}
+		if(sensores.terreno[3]!='M' ){
+			if(sensores.terreno[7] == 'M')
+				if(sensores.terreno[13]=='M')
+						accion = actTURN_SR;
+		}
+
+		if(sensores.terreno[5]!='M'){
+			if(sensores.terreno[1] == 'M')
+				if(sensores.terreno[11]=='M')
+						accion = actWALK;
+		}
+		if(sensores.terreno[7]!='M' ){
+			if(sensores.terreno[3] == 'M')
+				if(sensores.terreno[13]=='M')
+						accion = actWALK;
+		}
+	}
+
+	}
+	return accion;
+}
 //En el guión se nos indica que todos los mapas comparten las mismas dimensiones de los precipios (externos al mapa central)
 //Aunque dentro del propio mapa habrá más precipios
 void Rellenar_Precipicios_iniciales(vector<vector<unsigned char>>&matriz){
