@@ -31,7 +31,6 @@ class ComportamientoJugador : public Comportamiento{
       posicionamiento_encontrado=false;
       bateria_baja = false;
       recarga_encontrada= false;
-      lobo_encontrado = false;
       reseteado = false;
       colision_lobo = false;
       colision_aldeano = false;
@@ -39,10 +38,9 @@ class ComportamientoJugador : public Comportamiento{
       colision_muro=false;
       son_muros = true;
       hubo_colision=false;
+      girar_izquierda_derecha=false; 
+      he_girado_izquierda=false;
 
-      contador_muros=0;
-      girar_izquierda=false; //Para utilizarlo para girar otra vez
-      algo = false;
       
     }
 
@@ -59,7 +57,8 @@ class ComportamientoJugador : public Comportamiento{
   state current_state; //estado actual
   Action last_action; //Ultima acción realizada
   bool girar_derecha;
-  bool girar_izquierda;
+  bool he_girado_izquierda;
+  bool girar_izquierda_derecha;
   bool bien_situado;
   bool zapatillas;
   bool bikini;
@@ -67,7 +66,6 @@ class ComportamientoJugador : public Comportamiento{
   bool posicionamiento_encontrado; //Para comprobar si hemos encotrado una casilla de posicionamiento
   bool bateria_baja;
   bool recarga_encontrada;
-  bool lobo_encontrado;
   bool reseteado;
   bool colision_lobo;
   bool colision_aldeano;
@@ -77,9 +75,6 @@ class ComportamientoJugador : public Comportamiento{
 
 
   bool hubo_colision;
-
-  int contador_muros;
-  bool algo;
 
 };
 
