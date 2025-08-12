@@ -1,70 +1,84 @@
-Práctica 1 – Agentes Reactivos
-Asignatura: Inteligencia Artificial – Curso 2023/2024
-Autor: [Tu nombre]
+# 🤖 Práctica 1 – Agente Reactivo
 
-1. Introducción
-Esta práctica consiste en diseñar e implementar un agente reactivo que actúe como jugador en el entorno simulado Los mundos de BelKan. El agente debe explorar el mapa, identificar tipos de terreno, detectar obstáculos y posicionarse correctamente, maximizando el porcentaje de mapa descubierto.
+**Asignatura:** Inteligencia Artificial – Curso 2023/2024  
 
-2. Escenario
-El mapa es una matriz de hasta 100x100 celdas, con distintos tipos de terreno y elementos:
+---
 
-Terrenos: Bosque (B), Agua (A), Precipicio (P), Arenoso (T), Pedregoso (S), Muro (M).
+## 🎯 1. Introducción
+Esta práctica se centra en el diseño e implementación de un **agente reactivo** capaz de operar de forma autónoma en el entorno simulado de *Los mundos de BelKan*. El objetivo principal es que el agente explore el mapa, identifique diferentes tipos de terreno, evite obstáculos y se posicione correctamente, con el fin de maximizar el porcentaje del mapa descubierto.
 
-Objetos especiales: Bikini (K), Zapatillas (D), Recarga (X), Posicionamiento (G).
+---
 
-Agentes móviles: Aldeanos (a), Lobos (l) y el propio jugador (j).
+## 🗺️ 2. Escenario
+El mundo es una matriz de hasta **100x100 celdas** que contiene diversos terrenos y elementos:
 
-3. Características del Agente
-Sensores: Terreno, agentes, colisión, reset, posición, orientación, batería, nivel, tiempo.
+-   **Terrenos:**
+    -   `B`: Bosque
+    -   `A`: Agua
+    -   `P`: Precipicio
+    -   `T`: Arenoso
+    -   `S`: Pedregoso
+    -   `M`: Muro
 
-Acciones:
+-   **Objetos Especiales:**
+    -   `K`: Bikini (permite nadar en Agua)
+    -   `D`: Zapatillas (reduce coste en Bosque)
+    -   `X`: Recarga de Batería
+    -   `G`: Posicionamiento (recalibra sensores)
 
-actWALK (avanzar 1)
+-   **Agentes Móviles:**
+    -   `a`: Aldeanos
+    -   `l`: Lobos
+    -   `j`: Jugador (nuestro agente)
 
-actRUN (avanzar 2)
+---
 
-actTURN_SR (girar 45° dcha)
+## 💡 3. Características del Agente
 
-actTURN_L (girar 90° izq)
+### Sensores
+El agente percibe el entorno a través de un conjunto de sensores que le informan sobre:
+- Terreno, agentes cercanos, colisiones, estado de `reset`.
+- Posición, orientación, nivel de batería, nivel actual y tiempo restante.
 
-actIDLE (no hacer nada)
+### Acciones
+El agente puede ejecutar las siguientes acciones, cada una con un coste de batería variable:
+- `actWALK`: Avanzar 1 casilla.
+- `actRUN`: Avanzar 2 casillas.
+- `actTURN_SR`: Girar 45° a la derecha.
+- `actTURN_L`: Girar 90° a la izquierda.
+- `actIDLE`: No hacer nada (coste mínimo).
 
-Costes: Variables según terreno y objetos en posesión.
+---
 
-4. Implementación
-El comportamiento se define en jugador.cpp y jugador.hpp, sobre la clase ComportamientoJugador.
-Se han implementado reglas reactivas basadas en:
+## 💻 4. Implementación
+El núcleo del comportamiento se define en los ficheros `jugador.cpp` y `jugador.hpp`, dentro de la clase `ComportamientoJugador`. La lógica se basa en un conjunto de **reglas reactivas** que responden a estímulos inmediatos:
 
-Lectura del vector de terreno y detección de obstáculos inmediatos.
+-   🔎 **Detección de Obstáculos:** Lee el vector de terreno para identificar y evitar obstáculos inmediatos (`M`, `P`).
+-   🧭 **Estrategia de Exploración:** Prioriza el movimiento hacia casillas desconocidas (`?`) para maximizar la cobertura.
+-   🧱 **Evasión de Muros:** Implementa una lógica de seguimiento de paredes para evitar quedarse atascado.
+-   🔋 **Gestión de Batería:** Optimiza el uso de bikini y zapatillas para minimizar el consumo de energía en terrenos costosos.
+-   📍 **Autocalibración:** En niveles sin sensores de posición/orientación, utiliza las casillas `G` para recalibrar su estado interno.
 
-Priorización de movimiento hacia casillas no exploradas (?).
+El agente **no emplea planificación global ni búsqueda heurística**; todas sus decisiones se basan en el estado actual de sus sensores.
 
-Estrategias de evasión de muros y precipicios.
+---
 
-Gestión de batería optimizando el uso de bikini y zapatillas.
+## 🧪 5. Pruebas y Evaluación
+El comportamiento del agente ha sido evaluado en distintos niveles con desafíos incrementales:
 
-En niveles sin sensor de posición/orientación, uso de casillas de posicionamiento (G) para recalibrar.
+-   **Nivel 0:** Exploración sistemática con sensores completos. Se logra una cobertura muy alta.
+-   **Nivel 1:** Desafío sin sensor de posición. El agente ajusta su rumbo basándose en referencias visuales y obstáculos.
+-   **Nivel 2:** Evasión activa de lobos y aldeanos.
+-   **Nivel 3:** Gestión con orientación inicial desconocida y sensores potencialmente defectuosos.
 
-El agente no emplea planificación global ni búsqueda heurística; responde a estímulos inmediatos según el estado de los sensores.
+---
 
-5. Pruebas
-Se ha evaluado el comportamiento en distintos niveles:
+## 📊 6. Resultados
+El agente logra un **alto porcentaje de exploración** en todos los niveles, demostrando una especial eficacia en los niveles 0 y 1. En escenarios con enemigos, las tácticas de evasión son funcionales, aunque los reinicios forzados por colisiones pueden reducir la eficiencia global.
 
-Nivel 0: Exploración sistemática con cobertura alta.
+---
 
-Nivel 1: Estrategia robusta sin sensor de posición, ajustando rumbo por referencias visuales.
-
-Nivel 2: Evitación activa de lobos y aldeanos.
-
-Nivel 3: Gestión con orientación desconocida inicial y sensores defectuosos.
-
-6. Resultados
-El agente logra un alto porcentaje de exploración en todos los niveles, con especial eficacia en los niveles 0 y 1. En niveles con enemigos, la evasión es efectiva, aunque los reinicios reducen la eficiencia.
-
-7. Conclusiones
-El enfoque reactivo permite un comportamiento ágil y adaptable en entornos parcialmente observables.
-
-La ausencia de memoria global limita la optimización de rutas, pero mejora la tolerancia a cambios locales.
-
-Se podrían mejorar los niveles altos con un mapa auxiliar que recuerde zonas visitadas y rutas seguras.
-
+## 🏁 7. Conclusiones
+-   El enfoque **reactivo simple** permite un comportamiento ágil y muy adaptable en entornos dinámicos y parcialmente observables.
+-   La **ausencia de memoria global** limita la optimización de rutas, pero a cambio proporciona una alta tolerancia a cambios locales inesperados.
+-   Como mejora futura, se podría implementar un **mapa auxiliar** simple para recordar zonas ya visitadas y trazar rutas más seguras, especialmente en los niveles más complejos.
